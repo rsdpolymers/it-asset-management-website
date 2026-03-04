@@ -3,6 +3,7 @@ import { connectToDatabase } from '@/lib/mongodb'
 import { assetSchema } from '@/lib/validation'
 import { ObjectId } from 'mongodb'
 
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -29,54 +30,40 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { db } = await connectToDatabase()
-    const body = await request.json()
+    const { id } = await context.params   // ✅ FIX HERE
 
-    // Validate request body
-    const validationResult = assetSchema.safeParse(body)
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: validationResult.error.flatten(),
-        },
-        { status: 400 }
-      )
-    }
-
-    // Validate ID format
-    if (!ObjectId.isValid(params.id)) {
+    if (!ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: 'Invalid asset ID' },
         { status: 400 }
       )
     }
 
-    const result = await db
-      .collection('assets')
-      .findOneAndUpdate(
-        { _id: new ObjectId(params.id) },
-        {
-          $set: {
-            ...validationResult.data,
-            updatedAt: new Date(),
-          },
-        },
-        { returnDocument: 'after' }
-      )
+    const body = await request.json()
 
-    if (!result.value) {
-      return NextResponse.json({ error: 'Asset not found' }, { status: 404 })
+    // const client = await connectToDatabase()
+    const { db } = await connectToDatabase()
+
+    const result = await db.collection('assets').updateOne(
+      { _id: new ObjectId(id) },
+      { $set: body }
+    )
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { error: 'Asset not found' },
+        { status: 404 }
+      )
     }
 
-    return NextResponse.json(result.value)
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('PUT /api/assets/[id] error:', error)
+    console.error(error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to update asset' },
+      { error: 'Failed to update asset' },
       { status: 500 }
     )
   }
