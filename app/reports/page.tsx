@@ -37,15 +37,33 @@ export default function ReportsPage() {
   }, [assets, employees])
 
   // Device type summary
+  // Device type summary
   const deviceTypeSummary = useMemo(() => {
-    const types = new Map<string, { total: number; assigned: number; inStock: number; repair: number; scrap: number }>()
+    const types = new Map<
+      string,
+      {
+        total: number
+        assigned: number
+        inStock: number
+        repair: number
+        scrap: number
+      }
+    >()
 
     assets.forEach((asset) => {
-      if (!types.has(asset.deviceType)) {
-        types.set(asset.deviceType, { total: 0, assigned: 0, inStock: 0, repair: 0, scrap: 0 })
+      const type = asset.deviceType?.trim() || 'Unknown'
+
+      if (!types.has(type)) {
+        types.set(type, {
+          total: 0,
+          assigned: 0,
+          inStock: 0,
+          repair: 0,
+          scrap: 0,
+        })
       }
 
-      const entry = types.get(asset.deviceType)!
+      const entry = types.get(type)!
       entry.total++
 
       if (asset.status === 'Assigned') entry.assigned++
@@ -54,14 +72,11 @@ export default function ReportsPage() {
       else if (asset.status === 'Scrap') entry.scrap++
     })
 
-    return Array.from(types.entries())
-      .map(([type, stats]) => ({
-        type,
-        ...stats,
-      }))
-      .sort((a, b) => b.total - a.total)
+    return Array.from(types.entries()).map(([deviceType, data]) => ({
+      deviceType,
+      ...data,
+    }))
   }, [assets])
-
   // Department distribution
   const departmentData = useMemo(() => {
     const depts = new Map<string, number>()
@@ -78,14 +93,24 @@ export default function ReportsPage() {
 
   // Location summary
   const locationSummary = useMemo(() => {
-    const locations = new Map<string, { total: number; assigned: number; inStock: number; repair: number }>()
+    const locations = new Map<
+      string,
+      { total: number; assigned: number; inStock: number; repair: number }
+    >()
 
     assets.forEach((asset) => {
-      if (!locations.has(asset.location)) {
-        locations.set(asset.location, { total: 0, assigned: 0, inStock: 0, repair: 0 })
+      const location = asset.location?.trim() || 'Unknown'
+
+      if (!locations.has(location)) {
+        locations.set(location, {
+          total: 0,
+          assigned: 0,
+          inStock: 0,
+          repair: 0,
+        })
       }
 
-      const entry = locations.get(asset.location)!
+      const entry = locations.get(location)!
       entry.total++
 
       if (asset.status === 'Assigned') entry.assigned++
@@ -93,17 +118,16 @@ export default function ReportsPage() {
       else if (asset.status === 'Under Repair') entry.repair++
     })
 
-    return Array.from(locations.entries())
-      .map(([location, stats]) => ({
-        location,
-        ...stats,
-      }))
-      .sort((a, b) => b.total - a.total)
+    return Array.from(locations.entries()).map(([location, data]) => ({
+      location,
+      ...data,
+    }))
   }, [assets])
 
   // Asset age analysis (based on purchase date)
   const assetAgeData = useMemo(() => {
     const now = new Date()
+
     const ages = {
       'Less than 1 year': 0,
       '1-2 years': 0,
@@ -113,8 +137,14 @@ export default function ReportsPage() {
     }
 
     assets.forEach((asset) => {
+      if (!asset.purchaseDate) return
+
       const purchaseDate = new Date(asset.purchaseDate)
-      const ageInYears = (now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
+      if (isNaN(purchaseDate.getTime())) return
+
+      const ageInYears =
+        (now.getTime() - purchaseDate.getTime()) /
+        (1000 * 60 * 60 * 24 * 365.25)
 
       if (ageInYears < 1) ages['Less than 1 year']++
       else if (ageInYears < 2) ages['1-2 years']++
@@ -123,7 +153,9 @@ export default function ReportsPage() {
       else ages['5+ years']++
     })
 
-    return Object.entries(ages).map(([name, count]) => ({ name, count }))
+    return Object.entries(ages)
+      .map(([name, count]) => ({ name, count }))
+      .filter((item) => item.count > 0)
   }, [assets])
 
   // Colors for charts
@@ -219,9 +251,9 @@ export default function ReportsPage() {
                   </TableHeader>
                   <TableBody>
                     {deviceTypeSummary.map((device) => (
-                      <TableRow key={device.type}>
+                      <TableRow key={device.deviceType}>
                         <TableCell className="font-medium">
-                          {device.type}
+                          {device.deviceType}
                         </TableCell>
                         <TableCell className="text-right">
                           {device.total}
