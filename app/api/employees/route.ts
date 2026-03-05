@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/mongodb'
-import { ObjectId } from 'mongodb'
 import jwt from 'jsonwebtoken'
-import { error } from 'console'
 
 function verifyToken(request: NextRequest) {
   const token = request.cookies.get('token')?.value
@@ -40,6 +38,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Add Single Employee
 export async function POST(request: NextRequest) {
 
   const user = verifyToken(request)
@@ -51,8 +50,16 @@ export async function POST(request: NextRequest) {
     const { db } = await connectToDatabase()
     const body = await request.json()
 
+    if (Array.isArray(body)) {
+      return NextResponse.json(
+        { error: "Send one employee at a time" },
+        { status: 400 }
+      )
+    }
+
     const employee = {
-      ...body,
+      name: body.name,
+      email: body.email,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
