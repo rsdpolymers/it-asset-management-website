@@ -324,6 +324,53 @@ export function AssetModal({
                 </div>
               </div>
 
+              {/* Assigned Information */}
+              {showAssignedFields && (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground">
+                    Assignment Information
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    {/* Assigned Employee */}
+                    <div className="space-y-2">
+                      <Label>Assigned Employee</Label>
+
+                      <Select
+                        value={watch('assignedTo') ?? undefined }
+                        onValueChange={(value) => setValue('assignedTo', value as any)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue
+                            placeholder="Select employee"
+                            className="truncate"
+                          />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {employees.map((emp) => (
+                            <SelectItem key={emp._id} value={emp._id}>
+                              {emp.name} ({emp.email})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Assigned Date */}
+                    <div className="space-y-2">
+                      <Label>Assigned Date</Label>
+                      <Input
+                        type="date"
+                        {...register('assignedDate')}
+                      />
+                    </div>
+
+                  </div>
+                </div>
+              )}
+
               {/* Comments */}
               <div className="space-y-2">
                 <Label>Comments</Label>
