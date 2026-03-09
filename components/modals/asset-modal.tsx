@@ -193,6 +193,7 @@ export function AssetModal({
                         <SelectItem value="Monitor">Monitor</SelectItem>
                         <SelectItem value="Printer">Printer</SelectItem>
                         <SelectItem value="Router">Router</SelectItem>
+                        <SelectItem value="TV">TV</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
