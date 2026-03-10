@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const AssetStatusEnum = z.enum(['Assigned', 'In Stock', 'Under Repair', 'Scrap', 'Returned'])
-export const DeviceTypeEnum = z.enum(['Laptop', 'Desktop', 'Tablet', 'Phone', 'Monitor', 'Printer', 'Router', 'Other', 'TV'])
+export const DeviceTypeEnum = z.enum(['Laptop', 'Desktop', 'Tablet', 'Phone', 'Monitor', 'Printer', 'Router', 'TV', "CCTV-Camera", 'Other'])
 
 export const assetSchema = z.object({
   assetTag: z.string().optional(),
